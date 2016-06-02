@@ -55,7 +55,7 @@
 
 #define En 0b00000100  // Enable bit
 #define Rw 0b00000010  // Read/Write bit
-#define Rs 00000001  // Register select bit
+#define Rs 0b00000001  // Register select bit
 
 struct LiquidCrystal_I2C {
 	uint16_t _Addr;
@@ -82,11 +82,7 @@ extern I2C_HandleTypeDef hi2c1;
 
 void I2C_LiquidCrystal_print(struct LiquidCrystal_I2C *lcd, const char * text);
 
-void I2C_LiquidCrystal_create(struct LiquidCrystal_I2C *lcd, uint16_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows);
-
-void I2C_liquidCrystal_init(struct LiquidCrystal_I2C *lcd);
-
-void I2C_LiquidCrystal_write(struct LiquidCrystal_I2C *lcd, uint8_t value);
+void I2C_LiquidCrystal_init(struct LiquidCrystal_I2C *lcd, uint16_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows);
 
 void I2C_LiquidCrystal_begin(struct LiquidCrystal_I2C *lcd, uint8_t cols, uint8_t lines, uint8_t dotsize);
 
@@ -106,7 +102,6 @@ void  I2C_LiquidCrystal_cursor(struct LiquidCrystal_I2C *lcd);
 
 void  I2C_LiquidCrystal_noBlink(struct LiquidCrystal_I2C *lcd);
 
-
 void  I2C_LiquidCrystal_blink(struct LiquidCrystal_I2C *lcd);
 
 void  I2C_LiquidCrystal_scrollDisplayLeft(struct LiquidCrystal_I2C *lcd);
@@ -124,16 +119,10 @@ void I2C_LiquidCrystal_noAutoscroll(struct LiquidCrystal_I2C *lcd);
 void I2C_LiquidCrystal_createChar(struct LiquidCrystal_I2C *lcd, uint8_t location, uint8_t charmap[]);
 
 void I2C_LiquidCrystal_noBacklight(struct LiquidCrystal_I2C *lcd);
+
 void I2C_LiquidCrystal_backlight(struct LiquidCrystal_I2C *lcd);
 
 void I2C_LiquidCrystal_command(struct LiquidCrystal_I2C *lcd, uint8_t value);
-
-void I2C_LiquidCrystal_send(struct LiquidCrystal_I2C *lcd, uint8_t value, uint8_t mode);
-
-void I2C_LiquidCrystal_write4bits(struct LiquidCrystal_I2C *lcd, uint8_t value);
-void I2C_LiquidCrystal_expanderWrite(struct LiquidCrystal_I2C *lcd, uint8_t _data);
-
-void I2C_LiquidCrystal_pulseEnable(struct LiquidCrystal_I2C *lcd, uint8_t _data);
 
 
 #endif /* I2C_LCD_I2C_LCD_H_ */

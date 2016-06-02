@@ -12,6 +12,35 @@
 extern I2C_HandleTypeDef hi2c1;
 
 
+inline void I2C_LiquidCrystal_write(struct LiquidCrystal_I2C *lcd, uint8_t value) {
+	I2C_LiquidCrystal_send(lcd, value, Rs);
+}
+
+void I2C_LiquidCrystal_send(struct LiquidCrystal_I2C *lcd, uint8_t value, uint8_t mode) {
+	uint8_t highnib = value & 0xf0;
+	uint8_t lownib = (value << 4) & 0xf0;
+	I2C_LiquidCrystal_write4bits(lcd, (highnib) | mode);
+	I2C_LiquidCrystal_write4bits(lcd, (lownib) | mode);
+}
+
+void I2C_LiquidCrystal_write4bits(struct LiquidCrystal_I2C *lcd, uint8_t value) {
+	I2C_LiquidCrystal_expanderWrite(lcd, value);
+	I2C_LiquidCrystal_pulseEnable(lcd, value);
+}
+
+void I2C_LiquidCrystal_expanderWrite(struct LiquidCrystal_I2C *lcd, uint8_t _data) {
+	uint8_t data = _data | lcd->_backlightval;
+	HAL_I2C_Master_Transmit(&hi2c1, lcd->_Addr, &data, sizeof(_data), LCD_TIMEOUT);
+}
+
+void I2C_LiquidCrystal_pulseEnable(struct LiquidCrystal_I2C *lcd, uint8_t _data) {
+	I2C_LiquidCrystal_expanderWrite(lcd, _data | En);
+	HAL_Delay(1);
+	I2C_LiquidCrystal_expanderWrite(lcd, _data & ~En);
+	HAL_Delay(50);
+}
+
+
 void I2C_LiquidCrystal_print(struct LiquidCrystal_I2C *lcd, const char * text) {
 	unsigned int size = strlen(text);
 	for (int i = 0; i < size; ++i) {
@@ -19,21 +48,15 @@ void I2C_LiquidCrystal_print(struct LiquidCrystal_I2C *lcd, const char * text) {
 	}
 }
 
-void I2C_LiquidCrystal_create(struct LiquidCrystal_I2C *lcd, uint16_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows) {
+void I2C_LiquidCrystal_init(struct LiquidCrystal_I2C *lcd, uint16_t lcd_Addr, uint8_t lcd_cols, uint8_t lcd_rows) {
 	lcd->_Addr = lcd_Addr;
 	lcd->_cols = lcd_cols;
 	lcd->_rows = lcd_rows;
 	lcd->_backlightval = LCD_NOBACKLIGHT;
-}
 
-void I2C_liquidCrystal_init(struct LiquidCrystal_I2C *lcd) {
+
 	lcd->_displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
 	I2C_LiquidCrystal_begin(lcd, lcd->_cols, lcd->_rows, LCD_5x8DOTS);
-}
-
-
-void I2C_LiquidCrystal_write(struct LiquidCrystal_I2C *lcd, uint8_t value) {
-	I2C_LiquidCrystal_send(lcd, value, Rs);
 }
 
 
@@ -47,39 +70,25 @@ void I2C_LiquidCrystal_begin(struct LiquidCrystal_I2C *lcd, uint8_t cols, uint8_
 		lcd->_displayfunction |= LCD_5x10DOTS;
 	}
 
-	Serialprintln("01");
 	HAL_Delay(50);
 
-	Serialprintln("02");
 	I2C_LiquidCrystal_expanderWrite(lcd, lcd->_backlightval);
 
-	Serialprintln("03");
 	HAL_Delay(1000);
 
-	Serialprintln("04");
 	I2C_LiquidCrystal_write4bits(lcd, 0x03 << 4);
 
-	Serialprintln("05");
 	HAL_Delay(5);
 
-	Serialprintln("06");
 	I2C_LiquidCrystal_write4bits(lcd, 0x03 << 4);
 
-	Serialprintln("07");
 	HAL_Delay(5);
 
-
-	Serialprintln("08");
 	I2C_LiquidCrystal_write4bits(lcd, 0x03 << 4);
 
-	Serialprintln("09");
 	HAL_Delay(1);
 
-	Serialprintln("10");
 	I2C_LiquidCrystal_write4bits(lcd, 0x02 << 4);
-
-
-	Serialprintln("11");
 
 	I2C_LiquidCrystal_command(lcd, LCD_FUNCTIONSET | lcd->_displayfunction);
 
@@ -195,28 +204,6 @@ void I2C_LiquidCrystal_command(struct LiquidCrystal_I2C *lcd, uint8_t value) {
 	I2C_LiquidCrystal_send(lcd, value, 0);
 }
 
-void I2C_LiquidCrystal_send(struct LiquidCrystal_I2C *lcd, uint8_t value, uint8_t mode) {
-	uint8_t highnib = value & 0xf0;
-	uint8_t lownib = (value << 4) & 0xf0;
-	I2C_LiquidCrystal_write4bits(lcd, (highnib) | mode);
-	I2C_LiquidCrystal_write4bits(lcd, (lownib) | mode);
-}
 
-void I2C_LiquidCrystal_write4bits(struct LiquidCrystal_I2C *lcd, uint8_t value) {
-	I2C_LiquidCrystal_expanderWrite(lcd, value);
-	I2C_LiquidCrystal_pulseEnable(lcd, value);
-}
-
-void I2C_LiquidCrystal_expanderWrite(struct LiquidCrystal_I2C *lcd, uint8_t _data) {
-	uint8_t data = _data | lcd->_backlightval;
-	HAL_I2C_Master_Transmit(&hi2c1, lcd->_Addr, &data, sizeof(_data), LCD_TIMEOUT);
-}
-
-void I2C_LiquidCrystal_pulseEnable(struct LiquidCrystal_I2C *lcd, uint8_t _data) {
-	I2C_LiquidCrystal_expanderWrite(lcd, _data | En);
-	HAL_Delay(1);
-	I2C_LiquidCrystal_expanderWrite(lcd, _data & ~En);
-	HAL_Delay(50);
-}
 
 
